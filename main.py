@@ -26,6 +26,17 @@ class Interpretation():
 
         return new_interpretation
 
+    def __str__(self) -> str:
+        output = "s "
+        for i, literal in enumerate(self.interpretation):
+            if literal:
+                output += str(i+1)
+            else:
+                output += str(-(i+1))
+
+            output += " "
+        return output
+
 
 class Clause():
     def __init__(self, literals: list) -> None:
@@ -75,6 +86,15 @@ class Formula():
 
         return None
 
+    def count_unsatisfied_clauses(self, interpretation: Interpretation):
+        counter = 0
+        # Conta quantes clausules es falsifiquen
+        for clause in self.clauses:
+            if not clause.satisfied(interpretation):
+                counter += 1
+
+        return counter
+
     def __str__(self) -> str:
         output = "Variables: %i Clauses: %i\n" % (
             self.n_variables, self.n_clauses)
@@ -84,9 +104,11 @@ class Formula():
 
 
 class WalkSat():
-    def __init__(self, formula: Formula, max_tries: int = 1000, max_flips: int = 1000):
+    def __init__(self, formula: Formula, max_tries: int = 1000, max_flips: int = 1000, w: float = 0.8):
         self.max_tries = max_tries
         self.max_flips = max_flips
+
+        self.w = w
 
         self.formula = formula
 
@@ -95,6 +117,7 @@ class WalkSat():
 
     def solve(self):
         for _ in range(1, self.max_tries):
+            self.interpretation = Interpretation(self.formula.n_variables)
             for _ in range(1, self.max_flips):
                 # Mirar si hi ha una clausula que no satisfa la interpretacio
                 unsatisfied_clause = self.formula.get_unsatisfied_clause(
@@ -104,13 +127,30 @@ class WalkSat():
                 if not unsatisfied_clause:
                     return self.interpretation
 
-        pass
+                # Per cada literal dins la clausula insatisfeta, en calculem el broken
+                literal_min = None
+                broken_min = 999999
+                for literal in unsatisfied_clause:
+                    broken = self.broken(literal)
+                    if broken < broken_min:
+                        broken_min = broken
+                        literal_min = literal
+
+                # Si el broken es mes gran que 0 i amb certa probabilitat, canviarem un literal aleaotoriament
+                if broken_min > 0 and random.random() < self.w:
+                    literal_to_flip = random.choice(unsatisfied_clause)
+                else:
+                    literal_to_flip = literal_min
+
+                self.interpretation.flip(abs(literal_to_flip))
+        return None
 
     def broken(self, litral):
         # Canviar variable i contar quantes clausules no satisfa
         new_interpretation = self.interpretation.copy()
+        new_interpretation.flip(abs(litral))
 
-        pass
+        return self.formula.count_unsatisfied_clauses(new_interpretation)
 
 
 if __name__ == "__main__":
@@ -119,6 +159,7 @@ if __name__ == "__main__":
     print(str(formula))
     test_interpretation = Interpretation()
     test_interpretation.interpretation = [
-        False, False, False, False, False, False, False, False, False, True]
+        False, False, False, False, True, True, True, False, False, True]
     print(formula.get_unsatisfied_clause(test_interpretation))
-    WalkSat(formula)
+    model = WalkSat(formula)
+    print(str(model.solve()))
