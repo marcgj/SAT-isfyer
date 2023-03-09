@@ -82,7 +82,7 @@ class Formula():
         # Mira si exesteix una clausula que no es satifacible
         for clause in self.clauses:
             if not clause.satisfied(interpretation):
-                return clause
+                return clause.literals
 
         return None
 
@@ -113,7 +113,7 @@ class WalkSat():
         self.formula = formula
 
         # Generar interpretacio aleatoria
-        self.interpretation = Interpretation(self.formula.n_variables)
+        # self.interpretation = Interpretation(self.formula.n_variables)
 
     def solve(self):
         for _ in range(1, self.max_tries):
@@ -156,10 +156,10 @@ class WalkSat():
 if __name__ == "__main__":
     filename = sys.argv[1]
     formula = Formula(filename)
-    print(str(formula))
-    test_interpretation = Interpretation()
-    test_interpretation.interpretation = [
-        False, False, False, False, True, True, True, False, False, True]
-    print(formula.get_unsatisfied_clause(test_interpretation))
+    # print(str(formula))
+    # test_interpretation = Interpretation()
+    # test_interpretation.interpretation = [
+    #     False, False, False, False, True, True, True, False, False, True]
+    # print(formula.get_unsatisfied_clause(test_interpretation))
     model = WalkSat(formula)
     print(str(model.solve()))
