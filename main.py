@@ -59,9 +59,12 @@ class Clause():
 class Formula():
     def __init__(self, filename: str) -> None:
         self.clauses = []
+        self.sat_counter = []  # Contador de clausules satisfetes per cada literal
 
         # Obrir arxiu
         with open(filename, "r") as file:
+            actual_clause = 0
+
             for line in file:
                 if line[0] == "c":
                     # Saltar comentaris
@@ -72,11 +75,19 @@ class Formula():
                     splitted = line.split(" ")
                     self.n_variables = int(splitted[2])
                     self.n_clauses = int(splitted[3])
+                    self.literals_map = [[] for i in range(0, 1 + self.n_variables * 2)]  #La posició 0 no s'utilitza i cada posició conté una llista de clausules on apareix el literal
                     continue
 
                 # Parsejar clausules
                 clause = Clause(line.split(" ")[:-1])
+
+                for literal in clause.literals:
+                    self.literals_map[literal].append(actual_clause)
+
                 self.clauses.append(clause)
+                actual_clause += 1
+
+        print(self.literals_map)
 
     def get_unsatisfied_clause(self, interpretation: Interpretation):
         # Mira si exesteix una clausula que no es satifacible
