@@ -104,7 +104,7 @@ class Formula():
 
 
 class WalkSat():
-    def __init__(self, formula: Formula, max_tries: int = 1000, max_flips: int = 1000, w: float = 0.8):
+    def __init__(self, formula: Formula, max_tries: int = 1000, max_flips: int = 100, w: float = 0.8):
         self.max_tries = max_tries
         self.max_flips = max_flips
 
@@ -116,9 +116,9 @@ class WalkSat():
         # self.interpretation = Interpretation(self.formula.n_variables)
 
     def solve(self):
-        for _ in range(1, self.max_tries):
+        for r in range(1, self.max_tries):
             self.interpretation = Interpretation(self.formula.n_variables)
-            for _ in range(1, self.max_flips):
+            for f in range(1, self.max_flips):
                 # Mirar si hi ha una clausula que no satisfa la interpretacio
                 unsatisfied_clause = self.formula.get_unsatisfied_clause(
                     self.interpretation)
@@ -143,6 +143,7 @@ class WalkSat():
                     literal_to_flip = literal_min
 
                 self.interpretation.flip(abs(literal_to_flip))
+            # print("Max Flips reached " + str(r))
         return None
 
     def broken(self, litral):
@@ -162,4 +163,4 @@ if __name__ == "__main__":
     #     False, False, False, False, True, True, True, False, False, True]
     # print(formula.get_unsatisfied_clause(test_interpretation))
     model = WalkSat(formula)
-    print(str(model.solve()))
+    sol = model.solve()
