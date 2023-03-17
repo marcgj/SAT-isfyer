@@ -157,10 +157,14 @@ class WalkSat():
 if __name__ == "__main__":
     filename = sys.argv[1]
     formula = Formula(filename)
-    # print(str(formula))
+    print(str(formula))
     # test_interpretation = Interpretation()
     # test_interpretation.interpretation = [
     #     False, False, False, False, True, True, True, False, False, True]
     # print(formula.get_unsatisfied_clause(test_interpretation))
     model = WalkSat(formula)
     sol = model.solve()
+    if sol:
+        print(sol)
+    else:
+        print("UNSAT", file=sys.stderr)
