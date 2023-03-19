@@ -76,6 +76,7 @@ class Formula():
                     self.n_variables = int(splitted[2])
                     self.n_clauses = int(splitted[3])
                     self.literals_map = [[] for i in range(0, 1 + self.n_variables * 2)]  #La posició 0 no s'utilitza i cada posició conté una llista de clausules on apareix el literal
+                    self.satisfied_clauses_arr = [] #Cada posicio representa una clausula i conte el nombre de literals satisfetes
                     continue
 
                 # Parsejar clausules
@@ -91,11 +92,29 @@ class Formula():
 
     def get_unsatisfied_clause(self, interpretation: Interpretation):
         # Mira si exesteix una clausula que no es satifacible
+        self.satisfied_clauses(interpretation)
         for clause in self.clauses:
             if not clause.satisfied(interpretation):
                 return clause.literals
 
         return None
+
+    def satisfied_clauses(self, interpretation: Interpretation):
+        #Cada posicio representa una clausula i conte el nombre de literals satisfetes
+        for i, clause in enumerate(self.clauses):
+            for literal in clause.literals:
+                if interpretation.check(literal):
+                    self.satisfied_clauses_arr[i] += 1
+
+        print(self.satisfied_clauses_arr)
+
+    def update_satisfied_clauses(self, interpretation: Interpretation, literal):
+        #Actualitza el nombre de clausules satisfetes per cada literal
+        for clause in self.literals_map[literal]:
+            if interpretation.check(literal):
+                self.satisfied_clauses_arr[clause] += 1
+            else:
+                self.satisfied_clauses_arr[clause] -= 1
 
     def count_unsatisfied_clauses(self, interpretation: Interpretation):
         counter = 0
