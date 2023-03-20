@@ -154,6 +154,14 @@ class Formula():
 
         return counter
 
+    # Prova si una interpretacio es una resposta correcta, nomes emprat per testing
+    def deep_check_solution(self, interpretation: Interpretation):
+        for clause in self.clauses:
+            if not clause.satisfied(interpretation):
+                return False
+
+        return True
+
     def __str__(self) -> str:
         output = "Variables: %i Clauses: %i\n" % (
             self.n_variables, self.n_clauses)
