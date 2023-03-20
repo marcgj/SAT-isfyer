@@ -26,6 +26,12 @@ class TestSat(unittest.TestCase):
         res = sat.solve()
         self.assertIsNotNone(res)
 
+    def test_good_solution(self):
+        formula = Formula("test/formulas/sat_small.cnf")
+        sat = WalkSat(formula)
+        res = sat.solve()
+        self.assertIsNotNone(formula.deep_check_solution(res))
+
 
 if __name__ == '__main__':
     unittest.main()
