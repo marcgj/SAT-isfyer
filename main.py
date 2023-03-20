@@ -52,6 +52,15 @@ class Clause():
 
         return False
 
+    def count_satisfied_literals(self, interpretation: Interpretation):
+        # Comptem el numero de literals satisfacibles, utilitzat nomes en una estructura de dades
+        count = 0
+        for literal in self.literals:
+            if interpretation.check(literal):
+                count += 1
+
+        return count
+
     def __str__(self) -> str:
         return str(self.literals)
 
@@ -59,7 +68,6 @@ class Clause():
 class Formula():
     def __init__(self, filename: str) -> None:
         self.clauses = []
-        self.sat_counter = []  # Contador de clausules satisfetes per cada literal
 
         # Obrir arxiu
         with open(filename, "r") as file:
@@ -75,8 +83,9 @@ class Formula():
                     splitted = line.split(" ")
                     self.n_variables = int(splitted[2])
                     self.n_clauses = int(splitted[3])
-                    self.literals_map = [[] for i in range(0, 1 + self.n_variables * 2)]  #La posició 0 no s'utilitza i cada posició conté una llista de clausules on apareix el literal
-                    self.satisfied_clauses_arr = [] #Cada posicio representa una clausula i conte el nombre de literals satisfetes
+                    # La posició 0 no s'utilitza i cada posició conté una llista de clausules on apareix el literal
+                    self.literals_map = [[]
+                                         for i in range(0, 1 + self.n_variables * 2)]
                     continue
 
                 # Parsejar clausules
@@ -88,39 +97,59 @@ class Formula():
                 self.clauses.append(clause)
                 actual_clause += 1
 
-        print(self.literals_map)
+    def populate_satisfied_clauses_arr(self, interpretation: Interpretation):
+        # Cada posicio representa una clausula i conte el nombre de literals satisfetes
+        self.satisfied_clauses_arr = []
+        self.unsat_count = 0
+
+        for clause in self.clauses:
+            count = clause.count_satisfied_literals(interpretation)
+            if count == 0:
+                self.unsat_count += 1
+            self.satisfied_clauses_arr.append(count)
 
     def get_unsatisfied_clause(self, interpretation: Interpretation):
+        # Si tenim 0 al contador retornem directament None
+        if self.unsat_count == 0:
+            return None
+
         # Mira si exesteix una clausula que no es satifacible
-        self.satisfied_clauses(interpretation)
-        for clause in self.clauses:
-            if not clause.satisfied(interpretation):
-                return clause.literals
+        #! Poser seria mes eficiet fer anar un contador per el index encomptes del enumerate
+        for index, count in enumerate(self.satisfied_clauses_arr):
+            if count == 0:
+                return self.clauses[index].literals
 
         return None
 
     def satisfied_clauses(self, interpretation: Interpretation):
-        #Cada posicio representa una clausula i conte el nombre de literals satisfetes
+        # Cada posicio representa una clausula i conte el nombre de literals satisfetes
         for i, clause in enumerate(self.clauses):
             for literal in clause.literals:
                 if interpretation.check(literal):
                     self.satisfied_clauses_arr[i] += 1
 
-        print(self.satisfied_clauses_arr)
+        # print(self.satisfied_clauses_arr)
 
     def update_satisfied_clauses(self, interpretation: Interpretation, literal):
-        #Actualitza el nombre de clausules satisfetes per cada literal
-        for clause in self.literals_map[literal]:
-            if interpretation.check(literal):
-                self.satisfied_clauses_arr[clause] += 1
-            else:
-                self.satisfied_clauses_arr[clause] -= 1
+        # Actualitza el nombre de clausules satisfetes per cada literal
 
-    def count_unsatisfied_clauses(self, interpretation: Interpretation):
-        counter = 0
+        for index in self.literals_map[literal]:
+            clause = self.clauses[index]
+            sat_count = clause.count_satisfied_literals(interpretation)
+            self.satisfied_clauses_arr[index] = sat_count
+            if self.satisfied_clauses_arr[index] == 0 and sat_count != 0:
+                self.unsat_count -= 1
+
+            if self.satisfied_clauses_arr[index] != 0 and sat_count == 0:
+                self.unsat_count += 1
+
+    def count_unsatisfied_clauses(self, interpretation: Interpretation, literal):
+        counter = self.unsat_count
         # Conta quantes clausules es falsifiquen
-        for clause in self.clauses:
-            if not clause.satisfied(interpretation):
+        for index in self.literals_map[literal]:
+            clause = self.clauses[index]
+            sat_count = clause.count_satisfied_literals(interpretation)
+            if sat_count == 0:
                 counter += 1
 
         return counter
@@ -148,6 +177,7 @@ class WalkSat():
     def solve(self):
         for r in range(1, self.max_tries):
             self.interpretation = Interpretation(self.formula.n_variables)
+            self.formula.populate_satisfied_clauses_arr(self.interpretation)
             for f in range(1, self.max_flips):
                 # Mirar si hi ha una clausula que no satisfa la interpretacio
                 unsatisfied_clause = self.formula.get_unsatisfied_clause(
@@ -173,21 +203,23 @@ class WalkSat():
                     literal_to_flip = literal_min
 
                 self.interpretation.flip(abs(literal_to_flip))
+                self.formula.update_satisfied_clauses(
+                    self.interpretation, literal_to_flip)
             # print("Max Flips reached " + str(r))
         return None
 
-    def broken(self, litral):
+    def broken(self, literal):
         # Canviar variable i contar quantes clausules no satisfa
         new_interpretation = self.interpretation.copy()
-        new_interpretation.flip(abs(litral))
+        new_interpretation.flip(abs(literal))
 
-        return self.formula.count_unsatisfied_clauses(new_interpretation)
+        return self.formula.count_unsatisfied_clauses(new_interpretation, literal)
 
 
 if __name__ == "__main__":
     filename = sys.argv[1]
     formula = Formula(filename)
-    print(str(formula))
+    # print(str(formula))
     # test_interpretation = Interpretation()
     # test_interpretation.interpretation = [
     #     False, False, False, False, True, True, True, False, False, True]
