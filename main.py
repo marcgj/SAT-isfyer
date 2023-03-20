@@ -27,7 +27,8 @@ class Interpretation():
         return new_interpretation
 
     def __str__(self) -> str:
-        output = "s "
+
+        output = "c SAT-ISFYER \ns SATISFIABLE\nv "
         for i, literal in enumerate(self.interpretation):
             if literal:
                 output += str(i+1)
@@ -171,9 +172,10 @@ class Formula():
 
 
 class WalkSat():
-    def __init__(self, formula: Formula, max_tries: int = 1000, max_flips: int = 100, w: float = 0.8):
+    def __init__(self, formula: Formula, max_tries: int = 42010000006910000, flips_ratio: int = 3, w: float = 0.8):
         self.max_tries = max_tries
-        self.max_flips = max_flips
+        self.max_flips = flips_ratio * formula.n_variables
+
 
         self.w = w
 
@@ -236,5 +238,3 @@ if __name__ == "__main__":
     sol = model.solve()
     if sol:
         print(sol)
-    else:
-        print("UNSAT", file=sys.stderr)
