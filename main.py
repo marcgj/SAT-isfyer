@@ -146,6 +146,16 @@ class Formula():
             if self.satisfied_clauses_arr[index] != 0 and sat_count == 0:
                 self.unsat_count += 1
 
+        for index in self.literals_map[-literal]:
+            clause = self.clauses[index]
+            sat_count = clause.count_satisfied_literals(interpretation)
+            self.satisfied_clauses_arr[index] = sat_count
+            if self.satisfied_clauses_arr[index] == 0 and sat_count != 0:
+                self.unsat_count -= 1
+
+            if self.satisfied_clauses_arr[index] != 0 and sat_count == 0:
+                self.unsat_count += 1
+
     def count_unsatisfied_clauses(self, interpretation: Interpretation, literal):
         counter = self.unsat_count
         # Conta quantes clausules es falsifiquen
@@ -161,6 +171,7 @@ class Formula():
     def deep_check_solution(self, interpretation: Interpretation):
         for clause in self.clauses:
             if not clause.satisfied(interpretation):
+                print(clause, interpretation.interpretation)
                 return False
 
         return True
@@ -225,10 +236,6 @@ class WalkSat():
         new_interpretation = self.interpretation.copy()
         new_interpretation.flip(abs(literal))
 
-        # print(self.interpretation)
-        # print(new_interpretation)
-        # print(literal)
-
         return self.formula.count_unsatisfied_clauses(new_interpretation, -literal)
 
 
@@ -242,5 +249,6 @@ if __name__ == "__main__":
     # print(formula.get_unsatisfied_clause(test_interpretation))
     model = WalkSat(formula)
     sol = model.solve()
-    if sol:
+
+    if formula.deep_check_solution(sol):
         print(sol)
