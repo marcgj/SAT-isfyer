@@ -185,7 +185,7 @@ class Formula():
 
 
 class WalkSat():
-    def __init__(self, formula: Formula, max_tries: int = 42010000006910000, flips_ratio: int = 3, w: float = 0.8):
+    def __init__(self, formula: Formula, max_tries: int = 42010000006910000, flips_ratio: int = 7, w: float = 0.6):
         self.max_tries = max_tries
         self.max_flips = flips_ratio * formula.n_variables
 
@@ -250,5 +250,5 @@ if __name__ == "__main__":
     model = WalkSat(formula)
     sol = model.solve()
 
-    if formula.deep_check_solution(sol):
+    if sol:
         print(sol)
