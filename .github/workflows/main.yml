@@ -1,4 +1,4 @@
-name: Python tests
+name: Orgasmatron
 
 on: [push, pull_request]
 
