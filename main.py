@@ -16,8 +16,10 @@ class Interpretation():
         return self.interpretation[abs(literal)-1] == literal_bool
 
     def flip(self, literal):
+
         # Canviar de signe el literal
-        self.interpretation[abs(literal)-1] = -literal
+        self.interpretation[abs(
+            literal)-1] = not self.interpretation[abs(literal)-1]
 
     def copy(self):
         new_interpretation = Interpretation()
@@ -176,7 +178,6 @@ class WalkSat():
         self.max_tries = max_tries
         self.max_flips = flips_ratio * formula.n_variables
 
-
         self.w = w
 
         self.formula = formula
@@ -215,6 +216,7 @@ class WalkSat():
                 self.interpretation.flip(abs(literal_to_flip))
                 self.formula.update_satisfied_clauses(
                     self.interpretation, literal_to_flip)
+
             # print("Max Flips reached " + str(r))
         return None
 
@@ -223,7 +225,11 @@ class WalkSat():
         new_interpretation = self.interpretation.copy()
         new_interpretation.flip(abs(literal))
 
-        return self.formula.count_unsatisfied_clauses(new_interpretation, literal)
+        # print(self.interpretation)
+        # print(new_interpretation)
+        # print(literal)
+
+        return self.formula.count_unsatisfied_clauses(new_interpretation, -literal)
 
 
 if __name__ == "__main__":
