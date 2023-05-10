@@ -10,7 +10,9 @@
 </p>
 
 
-
+# About SAT-Isfayer
+SAT-Isfayer is a SAT-Solver based on a WalkSAT algorithm. Made as a university assignment where different SAT Solvers were tested in a 
+competition to see which was more efficient.
 
 ## Authors
 
